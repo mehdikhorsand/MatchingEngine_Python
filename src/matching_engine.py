@@ -23,7 +23,8 @@ class MatchingEngine:
                 and order.shareholder_id.ownership_validation(order)
 
         def is_order_accepted():
-            return order.broker_id.credit_validation(order)
+            return order.broker_id.credit_validation(order) \
+               and sum([trade.quantity for trade in self.trades]) >= order.min_qty
 
         def can_be_added_to_the_queue():
             # no fields value are changing in this function
