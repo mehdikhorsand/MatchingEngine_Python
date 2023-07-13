@@ -10,8 +10,7 @@ class Shareholder:
         self.id = shareholder_id
         self.ownership = ownership
         self.free_ownership = ownership
-        # todo
-        # self.total_sell_orders_quantity = 0
+        # todo: in the environment class use this field for validating quantity value
         # self.total_buy_orders_quantity = 0
         Shareholder.list.append(self)
 

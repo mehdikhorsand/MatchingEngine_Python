@@ -6,18 +6,13 @@ from src.trade import Trade
 
 
 class MatchingEngine:
-    def new_order_request(self, order):
-        self.last_order_type = "New"
-        order_info = order.__repr__().replace("\n\tOrder\t", "")
-        tc_runner.print_output(order_info)
-        self.trades.clear()
-        response = self.add_order(order)
-        tc_runner.print_output("NewOrderRs\t%s" % response)
+    def __init__(self, environment):
+        self.trades = []
+        self.order_book = OrderBook()
+        self.environment = environment
+        self.last_order_type = None
 
     def add_order(self, order):
-        if order.id == 41:
-            pass
-
         # no fields value are changing in this sub functions
         def can_have_trades():
             return order.has_valid_attrs()\
@@ -49,7 +44,6 @@ class MatchingEngine:
                 return "Accepted"
             else:
                 self.rollback_by_trades(first_state)
-                return "Rejected"
         return "Rejected"
 
     def match(self, new_order):
@@ -60,17 +54,19 @@ class MatchingEngine:
             if sell_order.price <= buy_order.price:
                 trade_qty = min(new_order.quantity, old_order.get_maximum_quantity_to_trade())
                 if trade_qty > 0:
-                    self.trades.append(Trade(trade_qty, buy_order, sell_order))
-                    if old_order.disclosed_quantity == 0 < old_order.peak_size:
-                        old_order.set_disclosed_quantity()
+                    if old_order.disclosed_quantity == trade_qty:
                         self.order_book.remove_order(old_order)
                         self.order_book.add_order(old_order)
+                    self.trades.append(Trade(trade_qty, buy_order, sell_order))
                     self.match(new_order)
 
-# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    def new_order_request(self, order):
+        self.last_order_type = "New"
+        order_info = order.__repr__().replace("\n\tOrder\t", "")
+        tc_runner.print_output(order_info)
+        self.trades.clear()
+        response = self.add_order(order)
+        tc_runner.print_output("NewOrderRs\t%s" % response)
 
     def cancel_order(self, order_id):
         #   like add_order returns the res of the cancel order
@@ -87,12 +83,6 @@ class MatchingEngine:
         assert after_rollback == first_state, "\n%s\nROLLBACK ERROR:\n" \
                                               "expected:\n%s\n" \
                                               "output:\n%s" % (trades, first_state, after_rollback)
-
-    def __init__(self, environment):
-        self.trades = []
-        self.order_book = OrderBook()
-        self.environment = environment
-        self.last_order_type = None
 
     def __repr__(self):
         output = "" if self.last_order_type == "Cancel" else self.print_trades() + "\n"

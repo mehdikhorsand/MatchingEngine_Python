@@ -43,21 +43,6 @@ class OrderBook:
     def contains(self, order):
         return order in (self.buy_order_ids + self.sell_order_ids)
 
-    def update_order_in_order_book(self, order, had_new_trade):
-        def should_order_be_added_to_the_order_book():
-            return not order.is_in_queue and order.filled_min_qty() and not had_new_trade and not order.fill_and_kill and \
-                (not order.is_buy or order.broker_id.credit_validation(order))
-
-        if order:
-            if should_order_be_added_to_the_order_book():
-                self.add_order(order)
-                order.accepted()
-            if order.disclosed_quantity <= 0 < order.peak_size:
-                order.set_disclosed_quantity()
-                if order.is_in_queue:
-                    self.remove_order(order)
-                    self.add_order(order)
-
     def remove_empty_orders(self):
         remove_list = list(filter(lambda x: x.quantity == 0, self.sell_order_ids + self.buy_order_ids))
         for order in remove_list:
