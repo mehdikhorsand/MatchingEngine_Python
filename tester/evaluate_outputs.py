@@ -4,7 +4,7 @@ import subprocess
 
 def evaluation(pyres_addr, hsres_addr):
     python_res = subprocess.check_output("cat %s" % pyres_addr, shell=True).decode()
-    haskell_res = subprocess.check_output("cat %s" % hsres_addr, shell=True).decode().replace("Eliminated", "Rejected")
+    haskell_res = subprocess.check_output("cat %s" % hsres_addr, shell=True).decode()
     error_msgs = ""
 
     error_msgs += evaluate(python_res, haskell_res, "OrderRs")

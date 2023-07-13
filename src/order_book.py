@@ -11,10 +11,6 @@ class OrderBook:
         return output
 
     def add_order(self, order):
-        order.set_disclosed_quantity()
-        order.is_in_queue = True
-        order.broker_id.added_new_order(order)
-        order.shareholder_id.added_new_order(order)
         if order.is_buy:
             self.buy_order_ids.append(order)
             self.sort_buy_orders()

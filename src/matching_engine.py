@@ -15,30 +15,41 @@ class MatchingEngine:
         tc_runner.print_output("NewOrderRs\t%s" % response)
 
     def add_order(self, order):
+        if order.id == 41:
+            pass
+
+        # no fields value are changing in this sub functions
         def can_have_trades():
-            # no fields value are changing in this function
             return order.has_valid_attrs()\
                 and self.environment.validate_order_price_limit(order)\
                 and self.environment.validate_order_quantity_limit(order, self.order_book)\
                 and order.shareholder_id.ownership_validation(order)
 
         def is_order_accepted():
-            return order.broker_id.credit_validation(order) \
-               and sum([trade.quantity for trade in self.trades]) >= order.min_qty
+            return order.broker_id.credit_validation(order)
+
+        def is_order_eliminated():
+            return total_traded_qty < order.min_qty
 
         def can_be_added_to_the_queue():
-            # no fields value are changing in this function
-            return order.quantity > 0
+            return order.quantity > 0 and not order.fill_and_kill
 
         first_state = self.__repr__()
         if can_have_trades():
             self.match(order)
-            if is_order_accepted():
+            total_traded_qty = sum([trade.quantity for trade in self.trades])
+            if is_order_eliminated():
+                self.rollback_by_trades(first_state)
+                return "Eliminated"
+            elif is_order_accepted():
                 if can_be_added_to_the_queue():
+                    order.order_got_added_to_queue()
                     self.order_book.add_order(order)
                 self.order_book.remove_empty_orders()
                 return "Accepted"
-            self.rollback_by_trades(first_state)
+            else:
+                self.rollback_by_trades(first_state)
+                return "Rejected"
         return "Rejected"
 
     def match(self, new_order):
@@ -56,7 +67,11 @@ class MatchingEngine:
                         self.order_book.add_order(old_order)
                     self.match(new_order)
 
-    # ////////////////////////////////////////////////////////////////////////////////////
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     def cancel_order(self, order_id):
         #   like add_order returns the res of the cancel order
         pass

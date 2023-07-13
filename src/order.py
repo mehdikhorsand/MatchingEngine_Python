@@ -6,6 +6,12 @@ from src import broker, shareholder
 class Order:
     counter = itertools.count(1)
 
+    def order_got_added_to_queue(self):
+        self.set_disclosed_quantity()
+        self.is_in_queue = True
+        self.broker_id.added_new_order(self)
+        self.shareholder_id.added_new_order(self)
+
     def __init__(self, broker_id, shareholder_id, price, quantity, is_buy, min_qty, fill_and_kill, peak_size):
         self.id = next(Order.counter)
         print("-----------------------------\norder_id:", self.id)
