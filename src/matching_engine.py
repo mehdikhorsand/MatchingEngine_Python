@@ -20,15 +20,17 @@ class MatchingEngine:
                 and self.environment.validate_order_quantity_limit(order, self.order_book)\
                 and order.shareholder_id.ownership_validation(order)
 
-        def is_order_accepted():
-            return order.broker_id.credit_validation(order)
-
         def is_order_eliminated():
-            return total_traded_qty < order.min_qty
+            return total_traded_qty < order.min_qty or (order.fill_and_kill and total_traded_qty == 0)
+
+        def is_order_accepted():
+            return order.broker_id.credit_validation(order) or (order.fill_and_kill and order.broker_id.free_credit >= 0)
 
         def can_be_added_to_the_queue():
             return order.quantity > 0 and not order.fill_and_kill
 
+        if order.id == 1245:
+            pass
         first_state = self.__repr__()
         if can_have_trades():
             self.match(order)
