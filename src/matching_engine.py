@@ -10,14 +10,41 @@ class MatchingEngine:
         self.trades = []
         self.order_book = OrderBook()
         self.environment = environment
-        self.last_order_type = None
+        self.last_request_type = None
+
+    def cancel_order_request(self, order_id, is_buy_order):
+        self.last_request_type = "Cancel"
+        self.trades.clear()
+        response = self.remove_order(order_id, is_buy_order)
+        tc_runner.print_output("CancelOrderRs\t%s" % response)
+
+    def remove_order(self, order_id, is_buy_order):
+        #   like add_order returns the res of the cancel order
+        order = self.order_book.get_order(order_id)
+        if order and order.is_buy == is_buy_order:
+            self.order_book.remove_order(order)
+            order.order_removed_from_queue()
+            return "Accepted"
+        else:
+            return "Rejected"
+
+# ///////////////////////////////////////////////////////////////////////////////
+# ///////////////////////////////////////////////////////////////////////////////
+# ///////////////////////////////////////////////////////////////////////////////
+    def new_order_request(self, order):
+        self.last_request_type = "New"
+        order_info = order.__repr__().replace("\n\tOrder\t", "")
+        tc_runner.print_output(order_info)
+        self.trades.clear()
+        response = self.add_order(order)
+        tc_runner.print_output("NewOrderRs\t%s" % response)
 
     def add_order(self, order):
         # no fields value are changing in this sub functions
         def can_have_trades():
             return order.has_valid_attrs()\
                 and self.environment.validate_order_price_limit(order)\
-                and self.environment.validate_order_quantity_limit(order, self.order_book)\
+                and self.environment.validate_order_quantity_limit(order)\
                 and order.shareholder_id.ownership_validation(order)
 
         def is_order_eliminated():
@@ -29,8 +56,6 @@ class MatchingEngine:
         def can_be_added_to_the_queue():
             return order.quantity > 0 and not order.fill_and_kill
 
-        if order.id == 1245:
-            pass
         first_state = self.__repr__()
         if can_have_trades():
             self.match(order)
@@ -40,7 +65,7 @@ class MatchingEngine:
                 return "Eliminated"
             elif is_order_accepted():
                 if can_be_added_to_the_queue():
-                    order.order_got_added_to_queue()
+                    order.order_added_to_queue()
                     self.order_book.add_order(order)
                 self.order_book.remove_empty_orders()
                 return "Accepted"
@@ -62,18 +87,6 @@ class MatchingEngine:
                     self.trades.append(Trade(trade_qty, buy_order, sell_order))
                     self.match(new_order)
 
-    def new_order_request(self, order):
-        self.last_order_type = "New"
-        order_info = order.__repr__().replace("\n\tOrder\t", "")
-        tc_runner.print_output(order_info)
-        self.trades.clear()
-        response = self.add_order(order)
-        tc_runner.print_output("NewOrderRs\t%s" % response)
-
-    def cancel_order(self, order_id):
-        #   like add_order returns the res of the cancel order
-        pass
-
     def rollback_by_trades(self, first_state):
         trades = self.print_trades()
         while self.trades:
@@ -87,7 +100,7 @@ class MatchingEngine:
                                               "output:\n%s" % (trades, first_state, after_rollback)
 
     def __repr__(self):
-        output = "" if self.last_order_type == "Cancel" else self.print_trades() + "\n"
+        output = "" if self.last_request_type == "Cancel" else self.print_trades() + "\n"
         output += self.order_book.__repr__()
         output += print_credits()
         output += print_ownerships()

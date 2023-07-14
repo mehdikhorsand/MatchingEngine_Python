@@ -20,42 +20,33 @@ class Broker:
         # sell order -> trade : increase credit of sell orders broker
         self.free_credit += trade.value
         self.credit += trade.value
-        self.report_broker("increase_credit", trade)
 
     def decrease_credit(self, trade):
         # buy order -> trade : decrease credit of buy orders broker
         self.credit -= trade.value
         if not trade.buy_order_id.is_in_queue:
             self.free_credit -= trade.value
-        self.report_broker("decrease_credit", trade)
 
     def credit_validation(self, order):
         # just before adding to the queue
-        return not order.is_buy or self.free_credit >= order.quantity * order.price
+        return not order.is_buy or self.free_credit >= order.value()
 
     def added_new_order(self, order):
         if order.is_buy:
-            order_value = order.quantity * order.price
-            self.free_credit -= order_value
+            self.free_credit -= order.value()
+
+    def deleted_old_order(self, order):
+        if order.is_buy:
+            self.free_credit += order.value()
 
     def rollback_increase_credit(self, trade):
         self.free_credit -= trade.value
         self.credit -= trade.value
-        self.report_broker("rollback_increase_credit", trade)
 
     def rollback_decrease_credit(self, trade):
         self.credit += trade.value
         if not trade.buy_order_id.is_in_queue:
             self.free_credit += trade.value
-        self.report_broker("rollback_decrease_credit", trade)
-
-    def report_broker(self, function_name, function_input):
-        # if self.id == 6:
-        #     print("broker_id: %s\n%s:" % (self.id, function_name), function_input)
-        #     print("\t credit:", self.credit)
-        #     print("\t free_credit:", self.free_credit)
-        # self.assert_credit()
-        pass
 
 
 def get_broker_by_id(broker_id):

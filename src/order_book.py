@@ -53,7 +53,7 @@ class OrderBook:
                     list(filter(lambda x: x.shareholder_id.id == order.shareholder_id.id, self.buy_order_ids))])
 
     def booked_orders_value_with_same_broker_and_side(self, order):
-        return sum([o.quantity * o.price for o in
+        return sum([o.value() for o in
                     list(filter(lambda x: x.broker_id.id == order.broker_id.id, self.buy_order_ids))])
 
     def rollback_order_book(self, trade):

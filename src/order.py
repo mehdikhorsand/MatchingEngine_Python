@@ -21,17 +21,19 @@ class Order:
         self.is_in_queue = False
         self.traded_qty_after_insertion = 0
 
-    def __repr__(self):
-        return "\n\tOrder\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
-            "Limit" if self.peak_size == 0 else "Iceberg", self.id, self.broker_id.id, self.shareholder_id.id,
-            self.price, self.quantity, "BUY " if self.is_buy else "SELL", self.min_qty,
-            "FAK" if self.fill_and_kill else "---", self.disclosed_quantity)
+    def value(self):
+        return self.quantity * self.price
 
-    def order_got_added_to_queue(self):
+    def order_added_to_queue(self):
         self.set_disclosed_quantity()
-        self.is_in_queue = True
         self.broker_id.added_new_order(self)
         self.shareholder_id.added_new_order(self)
+        self.is_in_queue = True
+
+    def order_removed_from_queue(self):
+        self.broker_id.deleted_old_order(self)
+        self.shareholder_id.deleted_old_order(self)
+        self.is_in_queue = False
 
     def has_valid_attrs(self):
         if self.fill_and_kill and (self.peak_size > 0 or self.min_qty > 0):
@@ -57,3 +59,9 @@ class Order:
         if self.is_in_queue and self.peak_size > 0:
             self.traded_qty_after_insertion -= trade.quantity
             self.set_disclosed_quantity()
+
+    def __repr__(self):
+        return "\n\tOrder\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
+            "Limit" if self.peak_size == 0 else "Iceberg", self.id, self.broker_id.id, self.shareholder_id.id,
+            self.price, self.quantity, "BUY " if self.is_buy else "SELL", self.min_qty,
+            "FAK" if self.fill_and_kill else "---", self.disclosed_quantity)

@@ -64,13 +64,11 @@ class Environment:
         upper_price_limit = self.reference_price + int(self.reference_price * self.static_price_band_upper_limit)
         return lower_price_limit <= order.price <= upper_price_limit
 
-    def validate_order_quantity_limit(self, order, order_book):
-        # todo : change this
-        owned_qty = order.shareholder_id.ownership
-        booked_orders_qty = order_book.booked_orders_qty_with_same_shareholder_and_side(order)
-        max_ownership = int(self.total_shares * self.ownership_upper_limit)
+    def validate_order_quantity_limit(self, order):
         if order.is_buy:
+            owned_qty = order.shareholder_id.ownership
+            booked_orders_qty = order.shareholder_id.booked_buy_orders_qty
+            max_ownership = int(self.total_shares * self.ownership_upper_limit)
             return owned_qty + order.quantity + booked_orders_qty < max_ownership
         else:
             return True
-            # return order.quantity + booked_orders_qty <= owned_qty

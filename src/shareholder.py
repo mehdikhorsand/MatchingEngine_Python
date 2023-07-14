@@ -10,8 +10,7 @@ class Shareholder:
         self.id = shareholder_id
         self.ownership = ownership
         self.free_ownership = ownership
-        # todo: in the environment class use this field for validating quantity value
-        # self.total_buy_orders_quantity = 0
+        self.booked_buy_orders_qty = 0
         Shareholder.list.append(self)
 
     def __repr__(self):
@@ -20,39 +19,40 @@ class Shareholder:
     def increase_ownership(self, trade):
         self.ownership += trade.quantity
         self.free_ownership += trade.quantity
-        self.report_shareholder("increase_ownership", trade)
+        if trade.buy_order_id.is_in_queue:
+            self.booked_buy_orders_qty -= trade.quantity
 
     def decrease_ownership(self, trade):
         self.ownership -= trade.quantity
         if not trade.sell_order_id.is_in_queue:
             self.free_ownership -= trade.quantity
-        self.report_shareholder("decrease_ownership", trade)
 
     def ownership_validation(self, order):
         # just before calling match function
         return order.is_buy or self.free_ownership >= order.quantity
 
     def added_new_order(self, order):
-        if not order.is_buy:
+        if order.is_buy:
+            self.booked_buy_orders_qty += order.quantity
+        else:
             self.free_ownership -= order.quantity
+
+    def deleted_old_order(self, order):
+        if order.is_buy:
+            self.booked_buy_orders_qty -= order.quantity
+        else:
+            self.free_ownership += order.quantity
 
     def rollback_increase_ownership(self, trade):
         self.ownership -= trade.quantity
         self.free_ownership -= trade.quantity
-        self.report_shareholder("rollback_increase_ownership", trade)
+        if trade.buy_order_id.is_in_queue:
+            self.booked_buy_orders_qty += trade.quantity
 
     def rollback_decrease_ownership(self, trade):
         self.ownership += trade.quantity
         if not trade.sell_order_id.is_in_queue:
             self.free_ownership += trade.quantity
-        self.report_shareholder("rollback_decrease_ownership", trade)
-
-    def report_shareholder(self, function_name, function_input):
-        if self.id == 1:
-            print("%s:" % function_name, function_input)
-            print("\townership:", self.ownership)
-            print("\tfree_ownership:", self.free_ownership)
-        pass
 
 
 def get_shareholder_by_id(shareholder_id):
