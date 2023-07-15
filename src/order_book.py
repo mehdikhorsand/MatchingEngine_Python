@@ -17,6 +17,7 @@ class OrderBook:
         else:
             self.sell_order_ids.append(order)
             self.sort_sell_orders()
+        order.order_added_to_queue()
 
     def sort_buy_orders(self):
         self.buy_order_ids.sort(key=lambda x: x.price, reverse=True)
@@ -31,6 +32,7 @@ class OrderBook:
         else:
             self.sell_order_ids.remove(order)
             self.sort_sell_orders()
+        order.order_removed_from_queue()
 
     def get_first_buy_order(self):
         valid_buy_orders = list(filter(lambda order: order.quantity > 0, self.buy_order_ids))
@@ -40,21 +42,10 @@ class OrderBook:
         valid_sell_orders = list(filter(lambda order: order.quantity > 0, self.sell_order_ids))
         return valid_sell_orders[0] if len(valid_sell_orders) > 0 else None
 
-    def contains(self, order):
-        return order in (self.buy_order_ids + self.sell_order_ids)
-
     def remove_empty_orders(self):
         remove_list = list(filter(lambda x: x.quantity == 0, self.sell_order_ids + self.buy_order_ids))
         for order in remove_list:
             self.remove_order(order)
-
-    def booked_orders_qty_with_same_shareholder_and_side(self, order):
-        return sum([o.quantity for o in
-                    list(filter(lambda x: x.shareholder_id.id == order.shareholder_id.id, self.buy_order_ids))])
-
-    def booked_orders_value_with_same_broker_and_side(self, order):
-        return sum([o.value() for o in
-                    list(filter(lambda x: x.broker_id.id == order.broker_id.id, self.buy_order_ids))])
 
     def rollback_order_book(self, trade):
         order = trade.sell_order_id if not trade.buy_order_id.is_in_queue else trade.buy_order_id
@@ -75,3 +66,4 @@ class OrderBook:
             self.buy_order_ids.insert(index, order)
         else:
             self.sell_order_ids.insert(index, order)
+        order.order_added_to_queue()

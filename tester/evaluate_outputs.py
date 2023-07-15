@@ -22,7 +22,7 @@ def evaluation(pyres_addr, hsres_addr):
 
 def evaluate(python_res, haskell_res, template):
     def error_template(expected, output):
-        return "\nError matching %s! %s = %s\n" \
+        return "\nError matching [%s]! %s = %s\n" \
                "expected:   %s\n" \
                "output:     %s\n" % (
                 template, "" if template in ["Order", "Trade"] else "order_id",

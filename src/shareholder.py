@@ -13,9 +13,6 @@ class Shareholder:
         self.booked_buy_orders_qty = 0
         Shareholder.list.append(self)
 
-    def __repr__(self):
-        return "\tOwnership\t%s\t%s" % (self.id, self.ownership)
-
     def increase_ownership(self, trade):
         self.ownership += trade.quantity
         self.free_ownership += trade.quantity
@@ -53,6 +50,9 @@ class Shareholder:
         self.ownership += trade.quantity
         if not trade.sell_order_id.is_in_queue:
             self.free_ownership += trade.quantity
+
+    def __repr__(self):
+        return "\tOwnership\t%s\t%s" % (self.id, self.ownership)
 
 
 def get_shareholder_by_id(shareholder_id):

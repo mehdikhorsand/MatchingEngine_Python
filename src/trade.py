@@ -1,4 +1,3 @@
-# CLEAN
 class Trade:
 
     def __init__(self, quantity, buy_order_id, sell_order_id):
@@ -16,10 +15,6 @@ class Trade:
         buy_order_id.shareholder_id.increase_ownership(self)
         sell_order_id.shareholder_id.decrease_ownership(self)
 
-    def __repr__(self):
-        return "\n\tTrade\t%s\t%s\t%s\t%s" \
-            % (self.price, self.quantity, self.buy_order_id.id, self.sell_order_id.id)
-
     def get_price(self):
         return self.buy_order_id.price \
             if self.buy_order_id.is_in_queue \
@@ -32,3 +27,7 @@ class Trade:
         self.sell_order_id.broker_id.rollback_increase_credit(self)
         self.buy_order_id.shareholder_id.rollback_increase_ownership(self)
         self.sell_order_id.shareholder_id.rollback_decrease_ownership(self)
+
+    def __repr__(self):
+        return "\n\tTrade\t%s\t%s\t%s\t%s" \
+            % (self.price, self.quantity, self.buy_order_id.id, self.sell_order_id.id)
