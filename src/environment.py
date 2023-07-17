@@ -11,8 +11,6 @@ class Environment:
         self.reference_price = None
         self.lot_size = None
         self.tick_size = None
-        self.broker_ids = None
-        self.shareholder_ids = None
 
     def __repr__(self):
         return "\tReferencePrice\t%s\n" \
