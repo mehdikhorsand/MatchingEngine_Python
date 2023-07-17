@@ -10,7 +10,6 @@ class Broker:
         self.id = broker_id
         self.credit = credit
         self.free_credit = credit
-        self.total_buy_orders_quantity = 0
         Broker.list.append(self)
 
     def __repr__(self):
