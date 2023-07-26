@@ -25,8 +25,8 @@ class Environment:
                 self.static_price_band_upper_limit,
                 self.total_shares,
                 self.ownership_upper_limit,
-                self.tick_size,
-                self.lot_size
+                self.tick_size,  # price
+                self.lot_size    # quantity
                 )
 
     def set_tick_size_rq(self, tick_size):
@@ -58,15 +58,21 @@ class Environment:
         self.ownership_upper_limit = ownership_upper_limit
 
     def validate_order_price_limit(self, order):
-        lower_price_limit = self.reference_price - int(self.reference_price * self.static_price_band_lower_limit)
-        upper_price_limit = self.reference_price + int(self.reference_price * self.static_price_band_upper_limit)
-        return lower_price_limit <= order.price <= upper_price_limit
+        if order.price % self.tick_size == 0:
+            lower_price_limit = self.reference_price - int(self.reference_price * self.static_price_band_lower_limit)
+            upper_price_limit = self.reference_price + int(self.reference_price * self.static_price_band_upper_limit)
+            return lower_price_limit <= order.price <= upper_price_limit
+        else:
+            return False
 
     def validate_order_quantity_limit(self, order):
-        if order.is_buy:
-            owned_qty = order.shareholder_id.ownership
-            booked_orders_qty = order.shareholder_id.booked_buy_orders_qty
-            max_ownership = int(self.total_shares * self.ownership_upper_limit)
-            return owned_qty + order.quantity + booked_orders_qty < max_ownership
+        if order.quantity % self.lot_size == 0:
+            if order.is_buy:
+                owned_qty = order.shareholder_id.ownership
+                booked_orders_qty = order.shareholder_id.booked_buy_orders_qty
+                max_ownership = int(self.total_shares * self.ownership_upper_limit)
+                return owned_qty + order.quantity + booked_orders_qty < max_ownership
+            else:
+                return True
         else:
-            return True
+            return False

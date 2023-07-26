@@ -48,7 +48,7 @@ class OrderBook:
             self.remove_order(order)
 
     def rollback_order_book(self, trade):
-        order = trade.sell_order_id if not trade.buy_order_id.is_in_queue else trade.buy_order_id
+        order = trade.sell_order_id if trade.sell_order_id.is_in_queue else trade.buy_order_id
         queue = self.buy_order_ids if order.is_buy else self.sell_order_ids
         queue.remove(order)
         queue.insert(0, order)

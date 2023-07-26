@@ -42,7 +42,3 @@ def evaluate(python_res, haskell_res, template):
 
 def find(testcase_output, template):
     return [elem.split("\n", 1)[0].strip() for elem in testcase_output.split("%s\t" % template)[1:]]
-
-
-def indexed_output(output):
-    return [(i + 1, x) for i, x in enumerate(output)]
