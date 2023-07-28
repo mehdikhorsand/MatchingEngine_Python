@@ -37,7 +37,7 @@ class Environment:
         tc_runner.print_output("SetLotSizeRs\tAccepted")
         self.lot_size = lot_size
 
-    def set_reference_price_request(self, reference_price):
+    def set_reference_price_rq(self, reference_price):
         tc_runner.print_output("SetReferencePriceRs\tAccepted")
         self.reference_price = reference_price
 

@@ -49,7 +49,7 @@ class TCRunner:
             case "SetLotSizeRq":
                 self.environment.set_lot_size_rq(int(args[0]))
             case "SetReferencePriceRq":
-                self.environment.set_reference_price_request(int(args[0]))
+                self.environment.set_reference_price_rq(int(args[0]))
             case "SetStaticPriceBandLowerLimitRq":
                 self.environment.set_static_price_band_lower_limit_rq(float(args[0]))
             case "SetStaticPriceBandUpperLimitRq":
