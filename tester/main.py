@@ -1,4 +1,3 @@
-import os
 import subprocess
 from src.tc_runner import TCRunner
 from tester import evaluate_outputs
